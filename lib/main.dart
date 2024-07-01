@@ -58,7 +58,6 @@ class _RoutingCriteriaCalendarWidgetState
   List<Appointment> appointments = [];
   AppointmentDataSource? appointmentDataSource;
   Appointment? _selectedAppointment;
-  String _selectedRecurrence = 'Once a week';
 
   @override
   void initState() {
@@ -265,135 +264,81 @@ class _RoutingCriteriaCalendarWidgetState
       text: _selectedAppointment?.endTime.toString(),
     );
 
-    _selectedRecurrence = 'Once a week'; // Default value
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text('Set Working Time'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: subjectController,
-                    decoration: InputDecoration(labelText: 'Subject'),
-                  ),
-                  TextField(
-                    controller: startTimeController,
-                    decoration: InputDecoration(labelText: 'Start Time'),
-                  ),
-                  TextField(
-                    controller: endTimeController,
-                    decoration: InputDecoration(labelText: 'End Time'),
-                  ),
-                  DropdownButton<String>(
-                    value: _selectedRecurrence,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedRecurrence = newValue!;
-                      });
-                    },
-                    items: <String>[
-                      'Once a week',
-                      'Repeat on weekdays',
-                      'Mon to Sat',
-                      'Everyday'
-                    ].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                ],
+        return AlertDialog(
+          title: Text('Set Working Time'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: subjectController,
+                decoration: InputDecoration(labelText: 'Subject'),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    _saveAppointment(
-                      subjectController.text,
-                      DateTime.parse(startTimeController.text),
-                      DateTime.parse(endTimeController.text),
-                      _selectedRecurrence,
+              TextField(
+                controller: startTimeController,
+                decoration: InputDecoration(labelText: 'Start Time'),
+              ),
+              TextField(
+                controller: endTimeController,
+                decoration: InputDecoration(labelText: 'End Time'),
+              ),
+              // Add checkboxes for days of the week here
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  if (_selectedAppointment != null) {
+                    int index = appointments.indexOf(_selectedAppointment!);
+                    if (index != -1) {
+                      appointments[index].subject = subjectController.text;
+                      appointments[index].startTime =
+                          DateTime.parse(startTimeController.text);
+                      appointments[index].endTime =
+                          DateTime.parse(endTimeController.text);
+
+                      // Notify listeners of the updated appointment
+                      appointmentDataSource!.notifyListeners(
+                        CalendarDataSourceAction.reset,
+                        [appointments[index]],
+                      );
+                    }
+                  }
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Save'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  if (_selectedAppointment != null) {
+                    appointments.remove(_selectedAppointment);
+                    // appointmentDataSource = AppointmentDataSource(appointments);
+                    appointmentDataSource!.notifyListeners(
+                      CalendarDataSourceAction.remove,
+                      [_selectedAppointment!],
                     );
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Save'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    _deleteAppointment();
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Delete'),
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                ),
-              ],
-            );
-          },
+                    _selectedAppointment = null;
+                  }
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Delete'),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+            ),
+          ],
         );
       },
     );
-  }
-
-  void _saveAppointment(
-      String subject, DateTime startTime, DateTime endTime, String recurrence) {
-    setState(() {
-      if (_selectedAppointment != null) {
-        appointments.remove(_selectedAppointment);
-      }
-
-      String recurrenceRule;
-      switch (recurrence) {
-        case 'Once a week':
-          recurrenceRule = 'FREQ=WEEKLY;COUNT=1';
-          break;
-        case 'Repeat on weekdays':
-          recurrenceRule = 'FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR';
-          break;
-        case 'Mon to Sat':
-          recurrenceRule = 'FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA';
-          break;
-        case 'Everyday':
-          recurrenceRule = 'FREQ=DAILY';
-          break;
-        default:
-          recurrenceRule = 'FREQ=WEEKLY;COUNT=1';
-      }
-
-      Appointment newAppointment = Appointment(
-        startTime: startTime,
-        endTime: endTime,
-        subject: subject,
-        color: Colors.blue,
-        recurrenceRule: recurrenceRule,
-      );
-
-      appointments.add(newAppointment);
-      appointmentDataSource!
-          .notifyListeners(CalendarDataSourceAction.reset, appointments);
-    });
-  }
-
-  void _deleteAppointment() {
-    setState(() {
-      if (_selectedAppointment != null) {
-        appointments.remove(_selectedAppointment);
-        appointmentDataSource!.notifyListeners(
-          CalendarDataSourceAction.remove,
-          [_selectedAppointment!],
-        );
-        _selectedAppointment = null;
-      }
-    });
   }
 }
