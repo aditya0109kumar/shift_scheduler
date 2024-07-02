@@ -159,8 +159,8 @@ class _RoutingCriteriaCalendarWidgetState
                           viewNavigationMode: ViewNavigationMode.none,
                           showDatePickerButton: false,
                           showNavigationArrow: false,
-                          allowDragAndDrop: true,
-                          allowAppointmentResize: true,
+                          allowDragAndDrop: false,
+                          allowAppointmentResize: false,
                           dragAndDropSettings: const DragAndDropSettings(
                             allowScroll: false,
                           ),
@@ -253,6 +253,169 @@ class _RoutingCriteriaCalendarWidgetState
     });
   }
 
+  void showCustomDialog(BuildContext context) {
+    final TextEditingController subjectController = TextEditingController(
+      text: _selectedAppointment?.subject,
+    );
+    final TextEditingController startTimeController = TextEditingController(
+      text: _selectedAppointment?.startTime.toString(),
+    );
+    final TextEditingController endTimeController = TextEditingController(
+      text: _selectedAppointment?.endTime.toString(),
+    );
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Set Working Time',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Name TextField
+              const Text(
+                'Name',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              TextField(
+                controller: subjectController,
+                decoration: InputDecoration(
+                  // labelText: 'Name',
+                  hintText: 'Add shift name',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                style: TextStyle(fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+              // Time Pickers
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      items: [
+                        DropdownMenuItem(
+                            value: 'Do not Repeat',
+                            child: Text('Do not Repeat')),
+                        DropdownMenuItem(
+                            value: 'Repeat on weekdays',
+                            child: Text('Repeat on weekdays')),
+                        DropdownMenuItem(value: 'Daily', child: Text('Daily')),
+                        DropdownMenuItem(
+                            value: 'Mon - Sat', child: Text('Mon - Sat')),
+                      ],
+                      onChanged: (value) {
+                        // TODO: Handle repeat option
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Repeat',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      items: [
+                        DropdownMenuItem(
+                            value: 'Do not Repeat',
+                            child: Text('Do not Repeat')),
+                        DropdownMenuItem(
+                            value: 'Repeat on weekdays',
+                            child: Text('Repeat on weekdays')),
+                        DropdownMenuItem(value: 'Daily', child: Text('Daily')),
+                        DropdownMenuItem(
+                            value: 'Mon - Sat', child: Text('Mon - Sat')),
+                      ],
+                      onChanged: (value) {
+                        // TODO: Handle repeat option
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Repeat',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              // Repeat Dropdown
+              DropdownButtonFormField<String>(
+                items: [
+                  DropdownMenuItem(
+                      value: 'Do not Repeat', child: Text('Do not Repeat')),
+                  DropdownMenuItem(
+                      value: 'Repeat on weekdays',
+                      child: Text('Repeat on weekdays')),
+                  DropdownMenuItem(value: 'Daily', child: Text('Daily')),
+                  DropdownMenuItem(
+                      value: 'Mon - Sat', child: Text('Mon - Sat')),
+                ],
+                onChanged: (value) {
+                  // TODO: Handle repeat option
+                },
+                decoration: InputDecoration(
+                  labelText: 'Repeat',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                style: TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+          actions: [
+            // Cancel Button
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(fontSize: 12),
+              ),
+            ),
+            // Delete Button
+            TextButton(
+              onPressed: () {
+                // TODO: Implement Delete action
+              },
+              child: Text(
+                'Delete',
+                style: TextStyle(fontSize: 12),
+              ),
+            ),
+            // Save Button
+            ElevatedButton(
+              onPressed: () {
+                // TODO: Implement Save action
+              },
+              child: Text(
+                'Save',
+                style: TextStyle(fontSize: 12),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showEditDialog() {
     final TextEditingController subjectController = TextEditingController(
       text: _selectedAppointment?.subject,
@@ -283,6 +446,27 @@ class _RoutingCriteriaCalendarWidgetState
               TextField(
                 controller: endTimeController,
                 decoration: InputDecoration(labelText: 'End Time'),
+              ),
+              DropdownButtonFormField<String>(
+                items: const [
+                  DropdownMenuItem(
+                      value: 'Do not Repeat', child: Text('Do not Repeat')),
+                  DropdownMenuItem(
+                      value: 'Repeat on weekdays',
+                      child: Text('Repeat on weekdays')),
+                  DropdownMenuItem(value: 'Daily', child: Text('Daily')),
+                  DropdownMenuItem(
+                      value: 'Mon - Sat', child: Text('Mon - Sat')),
+                ],
+                onChanged: (value) {
+                  // TODO: Handle repeat option
+                },
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                style: TextStyle(fontSize: 12),
               ),
               // Add checkboxes for days of the week here
             ],
